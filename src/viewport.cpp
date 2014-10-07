@@ -51,7 +51,7 @@ void viewport::resizeGL(int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glViewport(0, 0, w, h);
-    gluPerspective(45, (float)w / (float)h, 1, 1000);
+    gluPerspective(45, (float)w / (float)h, 1, 100000);
     glMatrixMode(GL_MODELVIEW);
 }
 
