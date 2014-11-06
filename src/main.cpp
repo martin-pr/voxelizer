@@ -23,6 +23,7 @@ int main(int argc, char*argv[]) {
 	int result = 0;
 	{
 		obj object(argv[1]);
+		object.normalize();
 
 		window win;
 		win.setObject(object);

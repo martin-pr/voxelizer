@@ -7,6 +7,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
+#include "array_maths.h"
+
 obj::obj() {
 }
 
@@ -63,4 +65,17 @@ const std::vector<std::array<unsigned, 3>>& obj::faces() const {
 
 const std::pair<std::array<float, 3>, std::array<float, 3>> obj::bbox() const {
 	return std::make_pair(m_min, m_max);
+}
+
+void obj::normalize() {
+	// centering
+	std::array<float, 3> mid = (m_max + m_min) / 2.0f;
+	mid[1] = m_min[1];
+
+	// maximum size on any of the axes
+	const float size = std::max(std::max(m_max[0] - m_min[0], m_max[1] - m_min[1]), m_max[2] - m_min[2]);
+
+	// and normalize each vertex
+	for(auto& v : m_vertices)
+		v = (v - mid) / size;
 }

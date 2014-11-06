@@ -14,6 +14,8 @@ class obj {
 
 		const std::pair<std::array<float, 3>, std::array<float, 3>> bbox() const;
 
+		void normalize();
+
 	protected:
 	private:
 		std::vector<std::array<float, 3>> m_vertices;
