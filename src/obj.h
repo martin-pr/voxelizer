@@ -4,6 +4,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include "bbox.h"
+
 class obj {
 	public:
 		obj();
@@ -12,7 +14,7 @@ class obj {
 		const std::vector<std::array<float, 3>>& vertices() const;
 		const std::vector<std::array<unsigned, 3>>& faces() const;
 
-		const std::pair<std::array<float, 3>, std::array<float, 3>> bbox() const;
+		const ::bbox bbox() const;
 
 		void normalize();
 
@@ -21,5 +23,5 @@ class obj {
 		std::vector<std::array<float, 3>> m_vertices;
 		std::vector<std::array<unsigned, 3>> m_faces;
 
-		std::array<float, 3> m_min, m_max;
+		::bbox m_bbox;
 };
