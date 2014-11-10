@@ -14,6 +14,8 @@ set(LIBS "")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
+add_definitions(-Wall -Werror)
+
 ###########################################################
 # DEPENDENCIES
 
