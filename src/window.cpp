@@ -16,7 +16,7 @@ namespace {
 		const std::array<float, 3> tr = box.min + (box.max - box.min) / 2.0f;
 		glTranslatef(tr[0], tr[1], tr[2]);
 		glScalef(box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]);
-		glutWireCube(1.0f);
+		glutSolidCube(1.0f);
 		glPopMatrix();
 	}
 }

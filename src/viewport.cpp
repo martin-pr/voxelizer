@@ -30,6 +30,9 @@ viewport::~viewport() {
 void viewport::initializeGL() {
 	glClearColor(0,0,0,0);
 	resizeGL(width(), height());
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 void viewport::paintGL() {
@@ -51,7 +54,7 @@ void viewport::resizeGL(int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glViewport(0, 0, w, h);
-    gluPerspective(45, (float)w / (float)h, 1, 100000);
+    gluPerspective(45, (float)w / (float)h, 0.01, 1000);
     glMatrixMode(GL_MODELVIEW);
 }
 
