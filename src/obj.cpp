@@ -9,10 +9,10 @@
 
 #include "array_maths.h"
 
-obj::obj() : m_bbox({0,0,0}, {0,0,0}) {
+obj::obj() : m_bbox({{0,0,0}}, {{0,0,0}}) {
 }
 
-obj::obj(const boost::filesystem::path& path) : m_bbox({0,0,0}, {0,0,0}) {
+obj::obj(const boost::filesystem::path& path) : m_bbox({{0,0,0}}, {{0,0,0}}) {
 	std::ifstream file(path.string().c_str());
 
 	std::string line;
@@ -81,5 +81,5 @@ void obj::normalize() {
 
 	// and set a new bounding box
 	const std::array<float, 3> half = (m_bbox.max - m_bbox.min) / 2.0f / size;
-	m_bbox = ::bbox({-half[0], 0.0f, -half[2]}, {half[0], 2.0f*half[1], half[2]});
+	m_bbox = ::bbox({{-half[0], 0.0f, -half[2]}}, {{half[0], 2.0f*half[1], half[2]}});
 }

@@ -19,7 +19,7 @@ grid_data::grid_data(unsigned char level) : m_level(level), m_mask(1 << level) {
 
 grid_data::grid_data(const grid_data& d) : m_level(d.m_level), m_mask(d.m_mask) {
 	for(unsigned i=0; i<8; ++i)
-		if(d.m_data[i] != NULL) {
+		if(d.m_data[i].get() != NULL) {
 			if(m_level > 0)
 				m_data[i] = std::shared_ptr<grid_data>(new grid_data(*d.m_data[i]));
 			else
@@ -32,7 +32,7 @@ grid_data& grid_data::operator = (const grid_data& d) {
 	m_mask = d.m_mask;
 
 	for(unsigned i=0; i<8; ++i)
-		if(d.m_data[i] != NULL) {
+		if(d.m_data[i].get() != NULL) {
 			if(m_level > 0)
 				m_data[i] = std::shared_ptr<grid_data>(new grid_data(*d.m_data[i]));
 			else
@@ -52,7 +52,7 @@ void grid_data::set(unsigned x, unsigned y, unsigned z) {
 		m_data[c] = s_leafData;
 	}
 	else {
-		if(m_data[c] == NULL)
+		if(m_data[c].get() == NULL)
 			m_data[c] = std::shared_ptr<grid_data>(new grid_data(m_level-1));
 		m_data[c]->set(x,y,z);
 	}
@@ -62,7 +62,7 @@ const bool grid_data::get(unsigned x, unsigned y, unsigned z) const {
 	const unsigned c = coord(x,y,z,m_mask);
 	assert(c < 8);
 
-	if(m_data[c] == NULL)
+	if(m_data[c].get() == NULL)
 		return false;
 
 	// on 0th level, anything non-null (s_leafData, to be precise) means true,
@@ -80,13 +80,13 @@ void grid_data::visit_active(const std::function<void (const ::bbox&)>& visitor,
 	// for all children
 	for(unsigned char a=0;a<8;++a)
 		// if the child is non-null
-		if(m_data[a] != NULL) {
+		if(m_data[a].get() != NULL) {
 			// compute the origin of the bounding box
-			const std::array<float, 3> min = {
+			const std::array<float, 3> min = {{
 				parent_bbox.min[0] + (a&4 ? half_size[0] : 0.0f),
 				parent_bbox.min[1] + (a&2 ? half_size[1] : 0.0f),
 				parent_bbox.min[2] + (a&1 ? half_size[2] : 0.0f),
-			};
+			}};
 
 			// if this is the leaf level, return the computed 1/8th bbox
 			if(m_level == 0)

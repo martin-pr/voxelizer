@@ -1,5 +1,7 @@
 project (animation_twist)
 
+# set(CMAKE_CXX_COMPILER "clang")
+
 cmake_minimum_required (VERSION 2.8.4)
 set(CMAKE_LEGACY_CYGWIN_WIN32 1)
 # set(CMAKE_VERBOSE_MAKEFILE true)
