@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <GL/freeglut.h>
+
 #include <QtGui/QMainWindow>
 
 #include "obj.h"
@@ -28,4 +30,6 @@ class window : public QMainWindow {
 		viewport* m_viewport;
 		obj m_object;
 		std::unique_ptr<grid> m_grid;
+
+		GLuint m_calllist;
 };
