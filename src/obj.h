@@ -18,6 +18,8 @@ class obj {
 
 		void normalize();
 
+		std::vector<std::array<float, 3>> sample(float maxEdgeLen);
+
 	protected:
 	private:
 		std::vector<std::array<float, 3>> m_vertices;

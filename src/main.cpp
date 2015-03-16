@@ -12,7 +12,7 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char*argv[]) {
-	if(argc == 0) {
+	if(argc == 1) {
 		cout << "usage: demo <file.obj>" << endl;
 		return 1;
 	}
@@ -29,9 +29,12 @@ int main(int argc, char*argv[]) {
 		// level 7 = 128x128x128
 		grid g(7, object.bbox());
 
-		// write all vertex data to the grid
-		for(auto& v : object.vertices())
-			g.set(v);
+        // sample the object and write the result to the grid
+        auto elem = g.element_size();
+        const float minSample = std::min(std::min(elem[0], elem[1]), elem[2]) / 2.0f;
+
+        for(const auto& v : object.sample(minSample))
+            g.set(v);
 
 		// and make a window to display this data
 		window win;

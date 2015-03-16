@@ -15,3 +15,7 @@ std::array<float, 3> operator / (const std::array<float, 3>& o1, const float& o2
 std::array<float, 3> operator - (const std::array<float, 3>& o) {
 	return std::array<float, 3>{{-o[0], -o[1], -o[2]}};
 }
+
+const float squaredLength(const std::array<float, 3>& p) {
+	return p[0]*p[0] + p[1]*p[1] + p[2]*p[2];
+}
