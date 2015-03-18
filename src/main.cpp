@@ -26,8 +26,8 @@ int main(int argc, char*argv[]) {
 		obj object(argv[1]);
 		object.normalize();
 
-		// level 7 = 128x128x128
-		grid g(7, object.bbox());
+		// level 8 = 256x256x256
+		grid g(8, object.bbox());
 
         // sample the object and write the result to the grid
         auto elem = g.element_size();

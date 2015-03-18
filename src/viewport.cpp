@@ -12,19 +12,14 @@ namespace {
 	std::vector<viewport*> s_instances;
 }
 
-viewport::viewport(QWidget* parent) : QGLWidget(parent, (s_instances.size()>0 ? s_instances[0] : NULL)), m_sceneDistance(10), m_sceneRotationX(30), m_sceneRotationY(30), m_mouseX(0), m_mouseY(0) {
+viewport::viewport(QWidget* parent) : QGLWidget(parent, (!s_instances.empty() ? s_instances[0] : NULL)), m_sceneDistance(10), m_sceneRotationX(30), m_sceneRotationY(30), m_mouseX(0), m_mouseY(0) {
 	s_instances.push_back(this);
 
 	setMouseTracking(true);
 }
 
 viewport::~viewport() {
-	int index = -1;
-	for(unsigned a=0;a<s_instances.size();a++)
-		if(s_instances[a] == this)
-			index = a;
-	assert(index >= 0);
-	s_instances.erase(s_instances.begin()+index);
+	s_instances.erase(std::find(s_instances.begin(), s_instances.end(), this));
 }
 
 void viewport::initializeGL() {

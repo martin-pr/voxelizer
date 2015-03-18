@@ -2,6 +2,10 @@
 
 #include <GL/glut.h>
 
+#include <QtGui/QHBoxLayout>
+#include <QtGui/QLabel>
+#include <QtGui/QSlider>
+
 #include "viewport.h"
 #include "bbox.h"
 #include "grid.h"
@@ -23,9 +27,27 @@ namespace {
 
 //////////////////////////////////////////
 
-window::window() : m_calllist(0) {
+window::window() {
+	QWidget* central = new QWidget();
+	setCentralWidget(central);
+
+	QHBoxLayout* mainLayout = new QHBoxLayout(central);
+
 	m_viewport = new viewport(this);
-	setCentralWidget(m_viewport);
+	mainLayout->addWidget(m_viewport, 1);
+
+	QWidget* panel = new QWidget();
+	panel->setMinimumWidth(200);
+	mainLayout->addWidget(panel);
+
+	QVBoxLayout* panelLayout = new QVBoxLayout(panel);
+	panelLayout->addWidget(new QLabel("Display levels:"));
+	m_slider = new QSlider(Qt::Horizontal);
+	m_slider->setMinimum(0);
+	m_slider->setMaximum(1);
+	panelLayout->addWidget(m_slider);
+
+	panelLayout->addWidget(new QWidget(), 1);
 
 	connect(m_viewport, SIGNAL(render(float)), this, SLOT(render(float)));
 }
@@ -39,13 +61,17 @@ void window::setObject(const obj& o) {
 
 void window::setGrid(const grid& g) {
 	m_grid = std::unique_ptr<grid>(new grid(g));
+	m_slider->setMaximum(m_grid->depth()-1);
 }
 
 void window::render(float dt) {
-	if(m_calllist == 0) {
-		m_calllist = glGenLists(1);
+	while(m_calllists.size() <= (unsigned)m_slider->value())
+		m_calllists.push_back(0);
 
-		glNewList(m_calllist, GL_COMPILE);
+	if(m_calllists[m_slider->value()] == 0) {
+		m_calllists[m_slider->value()] = glGenLists(1);
+
+		glNewList(m_calllists[m_slider->value()], GL_COMPILE);
 
 		glColor3f(0,0.5,0);
 		glBegin(GL_LINES);
@@ -71,7 +97,7 @@ void window::render(float dt) {
 
 		if(m_grid.get() != NULL) {
 			glColor3f(1, 0.5, 0.5);
-			m_grid->visit_active(&draw_bbox);
+			m_grid->visit_active(&draw_bbox, m_slider->value());
 		}
 
 		glEndList();
@@ -80,7 +106,7 @@ void window::render(float dt) {
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
 	glDisable(GL_LIGHTING);
-	glCallList(m_calllist);
+	glCallList(m_calllists[m_slider->value()]);
 
 	glPopAttrib();
 }

@@ -10,6 +10,7 @@
 
 class viewport;
 class grid;
+class QSlider;
 
 class window : public QMainWindow {
 	Q_OBJECT
@@ -28,8 +29,10 @@ class window : public QMainWindow {
 
 	private:
 		viewport* m_viewport;
+		QSlider* m_slider;
+
 		obj m_object;
 		std::unique_ptr<grid> m_grid;
 
-		GLuint m_calllist;
+		std::vector<GLuint> m_calllists;
 };
