@@ -19,7 +19,7 @@ class grid_data {
 
 		const unsigned char level() const;
 
-		void visit_active(const std::function<void (const ::bbox&)>& visitor, const ::bbox& parent_bbox);
+		void visit_active(const std::function<void (const ::bbox&)>& visitor, const ::bbox& parent_bbox, unsigned max_level);
 
 	protected:
 	private:

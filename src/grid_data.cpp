@@ -74,7 +74,7 @@ const unsigned char grid_data::level() const {
 	return m_level;
 }
 
-void grid_data::visit_active(const std::function<void (const ::bbox&)>& visitor, const ::bbox& parent_bbox) {
+void grid_data::visit_active(const std::function<void (const ::bbox&)>& visitor, const ::bbox& parent_bbox, unsigned max_level) {
 	const std::array<float, 3> half_size = (parent_bbox.max - parent_bbox.min) / 2.0f;
 
 	// for all children
@@ -89,10 +89,10 @@ void grid_data::visit_active(const std::function<void (const ::bbox&)>& visitor,
 			}};
 
 			// if this is the leaf level, return the computed 1/8th bbox
-			if(m_level == 0)
+			if((m_level == 0) || (max_level == 0))
 				visitor(::bbox(min, min+half_size));
 			// otherwise continue recursively
 			else
-				m_data[a]->visit_active(visitor, ::bbox(min, min+half_size));
+				m_data[a]->visit_active(visitor, ::bbox(min, min+half_size), max_level-1);
 		}
 }

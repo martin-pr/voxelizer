@@ -2,6 +2,7 @@
 
 #include <array>
 #include <functional>
+#include <limits>
 
 #include "grid_data.h"
 #include "bbox.h"
@@ -18,6 +19,7 @@ class grid {
 		const bool get(const std::array<unsigned, 3>& pos) const;
 
 		const ::bbox bbox() const;
+		const unsigned depth() const;
 
 		/// direct read-only data access, to be replaced by iterators
 		const grid_data& data() const;
@@ -27,13 +29,14 @@ class grid {
 
 		/// a silly way of visiting all elements - to be replaced, eventually, with something more
 		///   like an iterator (and more efficient)
-		void visit_active(const std::function<void (const ::bbox&)>& visitor);
+		void visit_active(const std::function<void (const ::bbox&)>& visitor, unsigned max_level = std::numeric_limits<unsigned>::max());
 
 	protected:
 	private:
 		const std::array<unsigned, 3> coord(const std::array<float, 3>& pos) const;
 
 		float m_depthPow;
+		unsigned m_depth;
 		unsigned m_coordLimit;
 		::bbox m_bbox;
 
