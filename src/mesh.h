@@ -9,6 +9,9 @@ class mesh {
 		mesh();
 		virtual ~mesh();
 
+		void add_vertex(const std::array<float, 3>& v);
+		void add_face(const std::array<unsigned, 3>& f);
+
 		const std::vector<std::array<float, 3>>& vertices() const;
 		const std::vector<std::array<unsigned, 3>>& faces() const;
 
@@ -17,10 +20,6 @@ class mesh {
 		void normalize();
 
 		std::vector<std::array<float, 3>> sample(float maxEdgeLen);
-
-	protected:
-		void add_vertex(const std::array<float, 3>& v);
-		void add_face(const std::array<unsigned, 3>& f);
 
 	private:
 		std::vector<std::array<float, 3>> m_vertices;

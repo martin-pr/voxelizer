@@ -1,16 +1,18 @@
-#include "obj.h"
-
 #include <fstream>
-#include <sstream>
-#include <cassert>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
 #include "array_maths.h"
+#include "factory.tpp"
+#include "mesh.h"
 
-obj::obj(const boost::filesystem::path& path) {
-	std::ifstream file(path.string().c_str());
+namespace {
+
+factory<mesh> s_objFactory(".obj", [](boost::filesystem::path p) {
+	std::unique_ptr<mesh> result(new mesh());
+
+	std::ifstream file(p.string().c_str());
 
 	std::string line;
 	while(std::getline(file, line))
@@ -20,7 +22,7 @@ obj::obj(const boost::filesystem::path& path) {
 
 				std::array<float, 3> vertex;
 				v >> vertex[0] >> vertex[1] >> vertex[2];
-				add_vertex(vertex);
+				result->add_vertex(vertex);
 			}
 
 			if(line[0] == 'f') {
@@ -37,9 +39,12 @@ obj::obj(const boost::filesystem::path& path) {
 					s >> val[std::min(2u,a)];
 					val[std::min(2u,a)] -= 1;
 					if(a >= 2)
-						add_face(val);
+						result->add_face(val);
 				}
 			}
 		}
-}
 
+	return std::move(result);
+});
+
+}

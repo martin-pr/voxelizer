@@ -5,15 +5,16 @@
 #include <GL/freeglut.h>
 
 #include "window.h"
-#include "obj.h"
+#include "factory.tpp"
 #include "grid.h"
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
 int main(int argc, char*argv[]) {
 	if(argc == 1) {
-		cout << "usage: demo <file.obj>" << endl;
+		cout << "usage: demo <file>" << endl;
 		return 1;
 	}
 
@@ -23,7 +24,12 @@ int main(int argc, char*argv[]) {
 
 	int result = 0;
 	{
-		std::unique_ptr<obj> object(new obj(argv[1]));
+		std::unique_ptr<mesh> object(factory<mesh>::create(argv[1]));
+        if(object.get() == NULL) {
+            cerr << "Cannot load file " << argv[1] << endl;
+            return 1;
+        }
+
 		object->normalize();
 
 		// level 8 = 256x256x256
