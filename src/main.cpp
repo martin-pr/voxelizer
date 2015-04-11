@@ -23,22 +23,22 @@ int main(int argc, char*argv[]) {
 
 	int result = 0;
 	{
-		obj object(argv[1]);
-		object.normalize();
+		std::unique_ptr<obj> object(new obj(argv[1]));
+		object->normalize();
 
 		// level 8 = 256x256x256
-		grid g(8, object.bbox());
+		grid g(8, object->bbox());
 
         // sample the object and write the result to the grid
         auto elem = g.element_size();
         const float minSample = std::min(std::min(elem[0], elem[1]), elem[2]) / 2.0f;
 
-        for(const auto& v : object.sample(minSample))
+        for(const auto& v : object->sample(minSample))
             g.set(v);
 
 		// and make a window to display this data
 		window win;
-		win.setObject(object);
+		win.setObject(std::move(object));
 		win.setGrid(g);
 		win.showMaximized();
 		result = app.exec();

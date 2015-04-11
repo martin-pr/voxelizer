@@ -9,10 +9,7 @@
 
 #include "array_maths.h"
 
-obj::obj() : m_bbox({{0,0,0}}, {{0,0,0}}) {
-}
-
-obj::obj(const boost::filesystem::path& path) : m_bbox({{0,0,0}}, {{0,0,0}}) {
+obj::obj(const boost::filesystem::path& path) {
 	std::ifstream file(path.string().c_str());
 
 	std::string line;
@@ -21,18 +18,9 @@ obj::obj(const boost::filesystem::path& path) : m_bbox({{0,0,0}}, {{0,0,0}}) {
 			if((line[0] == 'v') && (line[1] == ' ')) {
 				std::stringstream v(line.substr(1));
 
-				m_vertices.push_back(std::array<float, 3>());
-				v >> m_vertices.back()[0] >> m_vertices.back()[1] >> m_vertices.back()[2];
-
-				if(m_vertices.size() == 1) {
-					m_bbox.min = m_vertices.back();
-					m_bbox.max = m_vertices.back();
-				}
-				else
-					for(unsigned char c=0;c<3;++c) {
-						m_bbox.min[c] = std::min(m_vertices.back()[c], m_bbox.min[c]);
-						m_bbox.max[c] = std::max(m_vertices.back()[c], m_bbox.max[c]);
-					}
+				std::array<float, 3> vertex;
+				v >> vertex[0] >> vertex[1] >> vertex[2];
+				add_vertex(vertex);
 			}
 
 			if(line[0] == 'f') {
@@ -49,76 +37,9 @@ obj::obj(const boost::filesystem::path& path) : m_bbox({{0,0,0}}, {{0,0,0}}) {
 					s >> val[std::min(2u,a)];
 					val[std::min(2u,a)] -= 1;
 					if(a >= 2)
-						m_faces.push_back(val);
+						add_face(val);
 				}
 			}
 		}
 }
 
-const std::vector<std::array<float, 3>>& obj::vertices() const {
-	return m_vertices;
-}
-
-const std::vector<std::array<unsigned, 3>>& obj::faces() const {
-	return m_faces;
-}
-
-const ::bbox obj::bbox() const {
-	return m_bbox;
-}
-
-void obj::normalize() {
-	// centering
-	std::array<float, 3> mid = (m_bbox.max + m_bbox.min) / 2.0f;
-	mid[1] = m_bbox.min[1];
-
-	// maximum size on any of the axes
-	const float size = std::max(std::max(m_bbox.max[0] - m_bbox.min[0], m_bbox.max[1] - m_bbox.min[1]), m_bbox.max[2] - m_bbox.min[2]);
-
-	// normalize each vertex
-	for(auto& v : m_vertices)
-		v = (v - mid) / size;
-
-	// and set a new bounding box
-	const std::array<float, 3> half = (m_bbox.max - m_bbox.min) / 2.0f / size;
-	m_bbox = ::bbox({{-half[0], 0.0f, -half[2]}}, {{half[0], 2.0f*half[1], half[2]}});
-}
-
-namespace {
-	void sampleTriangle(std::vector<std::array<float, 3>>& result, const std::array<float, 3>& v1, const std::array<float, 3>& v2, const std::array<float, 3>& v3, const float maxEdgeLenSquared) {
-		const float sql1 = squaredLength(v1-v2);
-		const float sql2 = squaredLength(v1-v3);
-		const float sql3 = squaredLength(v2-v3);
-
-		if((sql1 < maxEdgeLenSquared) && (sql2 < maxEdgeLenSquared) && (sql3 < maxEdgeLenSquared)) {
-			result.push_back(v1);
-			result.push_back(v2);
-			result.push_back(v3);
-		}
-
-		else if((sql1 > sql2) && (sql1 > sql3)) {
-			const std::array<float, 3> mid = (v1+v2) / 2.0f;
-			sampleTriangle(result, v1, mid, v3, maxEdgeLenSquared);
-			sampleTriangle(result, mid, v2, v3, maxEdgeLenSquared);
-		}
-		else if((sql2 > sql1) && (sql2 > sql3)) {
-			const std::array<float, 3> mid = (v1+v3) / 2.0f;
-			sampleTriangle(result, v3, mid, v2, maxEdgeLenSquared);
-			sampleTriangle(result, mid, v1, v2, maxEdgeLenSquared);
-		}
-		else {
-			const std::array<float, 3> mid = (v2+v3) / 2.0f;
-			sampleTriangle(result, v1, mid, v3, maxEdgeLenSquared);
-			sampleTriangle(result, mid, v1, v2, maxEdgeLenSquared);
-		}
-	}
-}
-
-std::vector<std::array<float, 3>> obj::sample(float maxEdgeLen) {
-	std::vector<std::array<float, 3>> result;
-
-	for(const auto& face : m_faces)
-		sampleTriangle(result, m_vertices[face[0]], m_vertices[face[1]], m_vertices[face[2]], maxEdgeLen*maxEdgeLen);
-
-	return result;
-}

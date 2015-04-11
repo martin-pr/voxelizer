@@ -6,7 +6,7 @@
 
 #include <QtGui/QMainWindow>
 
-#include "obj.h"
+#include "mesh.h"
 
 class viewport;
 class grid;
@@ -19,7 +19,7 @@ class window : public QMainWindow {
 		window();
 		virtual ~window();
 
-		void setObject(const obj& o);
+		void setObject(std::unique_ptr<mesh>&& o);
 		void setGrid(const grid& g);
 
 	protected:
@@ -31,7 +31,7 @@ class window : public QMainWindow {
 		viewport* m_viewport;
 		QSlider* m_slider;
 
-		obj m_object;
+		std::unique_ptr<mesh> m_object;
 		std::unique_ptr<grid> m_grid;
 
 		std::vector<GLuint> m_calllists;

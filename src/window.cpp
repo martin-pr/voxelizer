@@ -55,8 +55,8 @@ window::window() {
 window::~window() {
 }
 
-void window::setObject(const obj& o) {
-	m_object = o;
+void window::setObject(std::unique_ptr<mesh>&& o) {
+	m_object = std::move(o);
 }
 
 void window::setGrid(const grid& g) {
@@ -65,48 +65,50 @@ void window::setGrid(const grid& g) {
 }
 
 void window::render(float dt) {
-	while(m_calllists.size() <= (unsigned)m_slider->value())
-		m_calllists.push_back(0);
+	if(m_object.get() != NULL) {
+		while(m_calllists.size() <= (unsigned)m_slider->value())
+			m_calllists.push_back(0);
 
-	if(m_calllists[m_slider->value()] == 0) {
-		m_calllists[m_slider->value()] = glGenLists(1);
+		if(m_calllists[m_slider->value()] == 0) {
+			m_calllists[m_slider->value()] = glGenLists(1);
 
-		glNewList(m_calllists[m_slider->value()], GL_COMPILE);
+			glNewList(m_calllists[m_slider->value()], GL_COMPILE);
 
-		glColor3f(0,0.5,0);
-		glBegin(GL_LINES);
-		for(int x = -10; x <= 10; ++x) {
-			glVertex3f(x,0,-10);
-			glVertex3f(x,0,10);
+			glColor3f(0,0.5,0);
+			glBegin(GL_LINES);
+			for(int x = -10; x <= 10; ++x) {
+				glVertex3f(x,0,-10);
+				glVertex3f(x,0,10);
 
-			glVertex3f(-10, 0, x);
-			glVertex3f(10, 0, x);
-		}
-		glEnd();
+				glVertex3f(-10, 0, x);
+				glVertex3f(10, 0, x);
+			}
+			glEnd();
 
-		glColor3f(1,1,1);
-		glBegin(GL_LINES);
-		for(auto f = m_object.faces().begin(); f != m_object.faces().end(); ++f)
-			for(unsigned char v=0;v<3;++v) {
-				glVertex3fv(m_object.vertices()[(*f)[v]].data());
-				glVertex3fv(m_object.vertices()[(*f)[(v+1)%3]].data());
+			glColor3f(1,1,1);
+			glBegin(GL_LINES);
+			for(auto f = m_object->faces().begin(); f != m_object->faces().end(); ++f)
+				for(unsigned char v=0;v<3;++v) {
+					glVertex3fv(m_object->vertices()[(*f)[v]].data());
+					glVertex3fv(m_object->vertices()[(*f)[(v+1)%3]].data());
+				}
+
+			glEnd();
+
+
+			if(m_grid.get() != NULL) {
+				glColor3f(1, 0.5, 0.5);
+				m_grid->visit_active(&draw_bbox, m_slider->value());
 			}
 
-		glEnd();
-
-
-		if(m_grid.get() != NULL) {
-			glColor3f(1, 0.5, 0.5);
-			m_grid->visit_active(&draw_bbox, m_slider->value());
+			glEndList();
 		}
 
-		glEndList();
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+		glDisable(GL_LIGHTING);
+		glCallList(m_calllists[m_slider->value()]);
+
+		glPopAttrib();
 	}
-
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glDisable(GL_LIGHTING);
-	glCallList(m_calllists[m_slider->value()]);
-
-	glPopAttrib();
 }
