@@ -22,7 +22,7 @@ add_definitions(-Wall -Werror)
 # DEPENDENCIES
 
 # looking for boost
-find_package(Boost REQUIRED COMPONENTS filesystem system unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS filesystem system serialization unit_test_framework)
 include_directories(${Boost_INCLUDE_DIR})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 
@@ -31,28 +31,12 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   #set(LIBS ${LIBS} /LIBPATH:${Boost_LIBRARY_DIRS})
 endif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 
-# looking for GTEngine library
-find_path(GTE_INCLUDE_DIR GTEngine.h ${LIBS_PATH}/GTEngine/include /usr/include/GTEngine /usr/local/include/GTEngine /mingw/include/GTEngine)
-find_library(GTE_LIBRARY NAMES gtengine PATHS /usr/lib /usr/local/lib)
-if (GTE_INCLUDE_DIR AND GTE_LIBRARY)
-  set (GTE_FOUND TRUE)
-  message (STATUS "GTE library found (${GTE_INCLUDE_DIR}).")
-else (GTE_INCLUDE_DIR AND GTE_LIBRARY)
-  message (FATAL_ERROR "GTE library not found (${GTE_INCLUDE_DIR}).")
-endif (GTE_INCLUDE_DIR AND GTE_LIBRARY)
-include_directories(${GTE_INCLUDE_DIR})
-set(LIBS ${LIBS} ${GTE_LIBRARY})
-
 # looking for OpenGL libraries
-find_package(OpenGL)
-if (OPENGL_FOUND)
-  message (STATUS "OpenGL libraries found (${OPENGL_INCLUDE_DIR} and ${OPENGL_LIBRARY}).")
-else (OPENGL_FOUND)
-  message(FATAL_ERROR "OpenGL libraries not found!")
-endif (OPENGL_FOUND)
+find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
 set(LIBS ${LIBS} ${OPENGL_LIBRARY})
 
+# looking for glut
 find_package(GLUT REQUIRED)
 include_directories(${GLUT_INCLUDE_DIR})
 set(LIBS ${LIBS} ${GLUT_LIBRARY})
@@ -77,10 +61,60 @@ include_directories(${QT_INCLUDE_DIR})
 set(LIBS ${LIBS} ${QT_LIBRARIES})
 message(STATUS ${QT_LIBRARIES})
 
-# Qt Framework
-# FIND_PACKAGE(QF REQUIRED)
-# include_directories(${QF_INCLUDE_DIR})
-# set(LIBS ${LIBS} ${QF_LIBRARY})
+# looking for Alembic library - REQUIRES A C++11 BUILD OF ALEMBIC!
+find_path(ALEMBIC_INCLUDE_DIR Alembic/Abc/All.h ${LIBS_PATH}/Alembic/include /usr/include /usr/local/include /usr/local/alembic-1.5.8/include)
+find_path(ALEMBIC_LIBRARY_PATH libAlembicAbc.a ${LIBS_PATH}/Alembic/lib /usr/lib /usr/local/lib /usr/local/alembic-1.5.8/lib /usr/local/alembic-1.5.8/lib/static)
+# the list of required libraries
+set(ALEMBIC_DEPS AlembicAbcCoreHDF5 AlembicAbcCoreAbstract AlembicUtil AlembicAbc AlembicAbcGeom AlembicAbcCollection)
+
+# find them all
+set(ALEMBIC_FOUND TRUE)
+set(ALEMBIC_LIBRARIES "")
+foreach(lib ${ALEMBIC_DEPS})
+  find_library(DEP${lib} NAMES ${lib} PATHS ${ALEMBIC_LIBRARY_PATH})
+  if(NOT DEP${lib})
+    set(ALEMBIC_FOUND FALSE)
+    message (FATAL_ERROR "Alembic library not found (${ALEMBIC_INCLUDE_DIR} and ${ALEMBIC_LIBRARIES}).")
+  else(NOT DEP${lib})
+    set(ALEMBIC_LIBRARIES ${ALEMBIC_LIBRARIES} ${DEP${lib}})
+  endif(NOT DEP${lib})
+endforeach(lib)
+# if found
+if(ALEMBIC_INCLUDE_DIR AND ALEMBIC_FOUND)
+  message (STATUS "Alembic library found (${ALEMBIC_INCLUDE_DIR} and ${ALEMBIC_LIBRARIES}).")
+endif(ALEMBIC_INCLUDE_DIR AND ALEMBIC_FOUND)
+# and include the result
+include_directories(${ALEMBIC_INCLUDE_DIR})
+set(LIBS ${LIBS} ${ALEMBIC_LIBRARIES})
+
+# looking for hdf5 libs
+SET(HDF5_LIBRARY_PATHS /usr/lib /usr/local/lib /sw/lib /opt/local/lib $ENV{PROGRAM_FILES}/HDF5/lib/static)
+FIND_PATH(HDF5_INCLUDE_DIR H5Cpp.h PATH_SUFFIXES HDF5 /usr/include /usr/local/include /sw/include /opt/local/include)
+FIND_LIBRARY(HDF5_LIBRARY NAMES hdf5 PATHS ${HDF5_LIBRARY_PATHS})
+FIND_LIBRARY(HDF5HL_LIBRARY NAMES hdf5_hl PATHS ${HDF5_LIBRARY_PATHS})
+if (HDF5_INCLUDE_DIR AND HDF5_LIBRARY AND HDF5HL_LIBRARY)
+  set (HDF5_FOUND TRUE)
+  message (STATUS "HDF5 library found (${HDF5_INCLUDE_DIR} and ${HDF5_LIBRARY}, ${HDF5HL_LIBRARY}).")
+else (HDF5_INCLUDE_DIR AND HDF5_LIBRARY AND HDF5HL_LIBRARY)
+  message (FATAL_ERROR "HDF5 library not found (${HDF5_INCLUDE_DIR} and ${HDF5_LIBRARY}, ${HDF5HL_LIBRARY}).")
+endif (HDF5_INCLUDE_DIR AND HDF5_LIBRARY AND HDF5HL_LIBRARY)
+include_directories(${HDF5_INCLUDE_DIR})
+set(LIBS ${LIBS} ${HDF5HL_LIBRARY} ${HDF5_LIBRARY})
+
+
+# looking for openexr libs
+SET(OPENEXR_LIBRARY_PATHS /usr/lib /usr/local/lib /sw/lib /opt/local/lib $ENV{PROGRAM_FILES}/OpenEXR/lib/static)
+FIND_PATH(OPENEXR_INCLUDE_DIR ImfRgbaFile.h PATH_SUFFIXES OpenEXR /usr/include /usr/local/include /sw/include /opt/local/include)
+FIND_LIBRARY(OPENEXR_HALF_LIBRARY NAMES Half PATHS ${OPENEXR_LIBRARY_PATHS})
+FIND_LIBRARY(OPENEXR_IEX_LIBRARY NAMES Iex PATHS ${OPENEXR_LIBRARY_PATHS})
+if (OPENEXR_INCLUDE_DIR AND OPENEXR_HALF_LIBRARY AND OPENEXR_IEX_LIBRARY)
+  set (HDF5_FOUND TRUE)
+  message (STATUS "OpenEXR library found (${OPENEXR_INCLUDE_DIR}, ${OPENEXR_IEX_LIBRARY} and ${OPENEXR_HALF_LIBRARY}).")
+else (OPENEXR_INCLUDE_DIR AND OPENEXR_HALF_LIBRARY AND OPENEXR_IEX_LIBRARY)
+  message (FATAL_ERROR "OpenEXR library not found (${OPENEXR_INCLUDE_DIR}, ${OPENEXR_IEX_LIBRARY} and ${OPENEXR_HALF_LIBRARY}).")
+endif (OPENEXR_INCLUDE_DIR AND OPENEXR_HALF_LIBRARY AND OPENEXR_IEX_LIBRARY)
+include_directories(${OPENEXR_INCLUDE_DIR})
+set(LIBS ${LIBS} ${OPENEXR_HALF_LIBRARY} ${OPENEXR_IEX_LIBRARY})
 
 
 ###########################################################
