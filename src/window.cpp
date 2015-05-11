@@ -27,7 +27,7 @@ namespace {
 
 //////////////////////////////////////////
 
-window::window() {
+window::window() : m_meshCalllist(0) {
 	QWidget* central = new QWidget();
 	setCentralWidget(central);
 
@@ -47,6 +47,13 @@ window::window() {
 	m_slider->setMaximum(1);
 	panelLayout->addWidget(m_slider);
 
+	m_mesh = new QCheckBox("display mesh");
+	panelLayout->addWidget(m_mesh);
+
+	m_bbox = new QCheckBox("display bbox");
+	m_bbox->setChecked(true);
+	panelLayout->addWidget(m_bbox);
+
 	panelLayout->addWidget(new QWidget(), 1);
 
 	connect(m_viewport, SIGNAL(render(float)), this, SLOT(render(float)));
@@ -65,25 +72,28 @@ void window::setGrid(const grid& g) {
 }
 
 void window::render(float dt) {
-	if(m_object.get() != NULL) {
-		while(m_calllists.size() <= (unsigned)m_slider->value())
-			m_calllists.push_back(0);
 
-		if(m_calllists[m_slider->value()] == 0) {
-			m_calllists[m_slider->value()] = glGenLists(1);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glDisable(GL_LIGHTING);
 
-			glNewList(m_calllists[m_slider->value()], GL_COMPILE);
+	// ground plane
+	glColor3f(0,0.5,0);
+	glBegin(GL_LINES);
+	for(int x = -10; x <= 10; ++x) {
+		glVertex3f(x,0,-10);
+		glVertex3f(x,0,10);
 
-			glColor3f(0,0.5,0);
-			glBegin(GL_LINES);
-			for(int x = -10; x <= 10; ++x) {
-				glVertex3f(x,0,-10);
-				glVertex3f(x,0,10);
+		glVertex3f(-10, 0, x);
+		glVertex3f(10, 0, x);
+	}
+	glEnd();
 
-				glVertex3f(-10, 0, x);
-				glVertex3f(10, 0, x);
-			}
-			glEnd();
+	// mesh
+	if(m_mesh->isChecked()) {
+		if(m_meshCalllist == 0) {
+			m_meshCalllist = glGenLists(1);
+
+			glNewList(m_meshCalllist, GL_COMPILE);
 
 			glColor3f(1,1,1);
 			glBegin(GL_LINES);
@@ -95,20 +105,34 @@ void window::render(float dt) {
 
 			glEnd();
 
-
-			if(m_grid.get() != NULL) {
-				glColor3f(1, 0.5, 0.5);
-				m_grid->visit_active(&draw_bbox, m_slider->value());
-			}
-
 			glEndList();
 		}
 
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-		glDisable(GL_LIGHTING);
-		glCallList(m_calllists[m_slider->value()]);
-
-		glPopAttrib();
+		glCallList(m_meshCalllist);
 	}
+
+	// bboxes
+	if(m_bbox->isChecked()) {
+		if(m_object.get() != NULL) {
+			while(m_calllists.size() <= (unsigned)m_slider->value())
+				m_calllists.push_back(0);
+
+			if(m_calllists[m_slider->value()] == 0) {
+				m_calllists[m_slider->value()] = glGenLists(1);
+
+				glNewList(m_calllists[m_slider->value()], GL_COMPILE);
+
+				if(m_grid.get() != NULL) {
+					glColor3f(1, 0.5, 0.5);
+					m_grid->visit_active(&draw_bbox, m_slider->value());
+				}
+
+				glEndList();
+			}
+
+			glCallList(m_calllists[m_slider->value()]);
+		}
+	}
+
+	glPopAttrib();
 }

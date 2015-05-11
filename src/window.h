@@ -5,6 +5,7 @@
 #include <GL/freeglut.h>
 
 #include <QtGui/QMainWindow>
+#include <QtGui/QCheckBox>
 
 #include "mesh.h"
 
@@ -31,8 +32,11 @@ class window : public QMainWindow {
 		viewport* m_viewport;
 		QSlider* m_slider;
 
+		QCheckBox *m_mesh, *m_bbox;
+
 		std::unique_ptr<mesh> m_object;
 		std::unique_ptr<grid> m_grid;
 
 		std::vector<GLuint> m_calllists;
+		GLuint m_meshCalllist;
 };
