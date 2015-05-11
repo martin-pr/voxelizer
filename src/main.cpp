@@ -30,7 +30,7 @@ int main(int argc, char*argv[]) {
             return 1;
         }
 
-		object->normalize();
+		//object->normalize();
 
 		// level 8 = 256x256x256
 		grid g(8, object->bbox());

@@ -23,4 +23,5 @@ class viewport : public QGLWidget, public boost::noncopyable {
 	private:
 		float m_sceneDistance, m_sceneRotationX, m_sceneRotationY;
 		int m_mouseX, m_mouseY;
+		int m_width, m_height;
 };
