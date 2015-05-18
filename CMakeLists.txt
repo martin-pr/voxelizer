@@ -22,7 +22,7 @@ add_definitions(-Wall -Werror)
 # DEPENDENCIES
 
 # looking for boost
-find_package(Boost REQUIRED COMPONENTS filesystem system serialization unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS filesystem system serialization unit_test_framework program_options)
 include_directories(${Boost_INCLUDE_DIR})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 
