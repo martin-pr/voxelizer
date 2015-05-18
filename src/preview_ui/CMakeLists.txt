@@ -1,14 +1,12 @@
 include_directories(./)
 include_directories(../lib)
-include_directories(../ui)
+include_directories(../common)
 
-file(GLOB headers_preview *.h)
-file(GLOB sources_preview *.cpp)
-file(GLOB headers_ui ../ui/*.h)
-file(GLOB sources_ui ../ui/*.cpp)
+file(GLOB headers_preview *.h ../common/viewport.h)
+file(GLOB sources_preview *.cpp ../common/viewport.cpp)
 
-set(headers ${headers_preview} ${headers_ui})
-set(sources ${sources_preview} ${sources_ui})
+set(headers ${headers_preview})
+set(sources ${sources_preview})
 
 QT4_WRAP_CPP(headers_moc ${headers})
 

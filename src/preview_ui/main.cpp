@@ -33,7 +33,7 @@ int main(int argc, char*argv[]) {
 		//object->normalize();
 
 		// level 8 = 256x256x256
-		grid g(8, object->bbox());
+		grid g(7, object->bbox());
 
         // sample the object and write the result to the grid
         auto elem = g.element_size();
