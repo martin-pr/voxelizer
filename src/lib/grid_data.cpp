@@ -7,7 +7,7 @@
 
 namespace {
 	// static "leaf" data node - to be used as a shared instance for the leafest (0 level) nodes
-	static std::shared_ptr<grid_data> s_leafData(new grid_data(0));
+	static boost::shared_ptr<grid_data> s_leafData(new grid_data(0));
 
 	inline const unsigned coord(unsigned x, unsigned y, unsigned z, unsigned mask) {
 		return (x & mask ? 4 : 0) + (y & mask ? 2 : 0) + (z & mask ? 1 : 0);
@@ -21,7 +21,7 @@ grid_data::grid_data(const grid_data& d) : m_level(d.m_level), m_mask(d.m_mask) 
 	for(unsigned i=0; i<8; ++i)
 		if(d.m_data[i].get() != NULL) {
 			if(m_level > 0)
-				m_data[i] = std::shared_ptr<grid_data>(new grid_data(*d.m_data[i]));
+				m_data[i] = boost::shared_ptr<grid_data>(new grid_data(*d.m_data[i]));
 			else
 				m_data[i] = s_leafData;
 		}
@@ -34,7 +34,7 @@ grid_data& grid_data::operator = (const grid_data& d) {
 	for(unsigned i=0; i<8; ++i)
 		if(d.m_data[i].get() != NULL) {
 			if(m_level > 0)
-				m_data[i] = std::shared_ptr<grid_data>(new grid_data(*d.m_data[i]));
+				m_data[i] = boost::shared_ptr<grid_data>(new grid_data(*d.m_data[i]));
 			else
 				m_data[i] = s_leafData;
 		}
@@ -53,7 +53,7 @@ void grid_data::set(unsigned x, unsigned y, unsigned z) {
 	}
 	else {
 		if(m_data[c].get() == NULL)
-			m_data[c] = std::shared_ptr<grid_data>(new grid_data(m_level-1));
+			m_data[c] = boost::shared_ptr<grid_data>(new grid_data(m_level-1));
 		m_data[c]->set(x,y,z);
 	}
 }

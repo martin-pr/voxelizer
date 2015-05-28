@@ -3,11 +3,19 @@
 #include <array>
 #include <iostream>
 
+#include <boost/serialization/access.hpp>
+
 struct bbox {
 	bbox(const std::array<float, 3>& _min, const std::array<float, 3>& _max) : min(_min), max(_max) {
 	}
 
 	std::array<float, 3> min, max;
+
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version) {
+		ar & min;
+		ar & max;
+	}
 };
 
 inline std::ostream& operator << (std::ostream& out, const bbox& b) {
@@ -16,3 +24,4 @@ inline std::ostream& operator << (std::ostream& out, const bbox& b) {
 
 	return out;
 }
+

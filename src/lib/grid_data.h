@@ -4,6 +4,9 @@
 #include <memory>
 
 #include <boost/optional.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "bbox.h"
 
@@ -25,5 +28,15 @@ class grid_data {
 	private:
 		unsigned char m_level;
 		unsigned m_mask;
-		std::array<std::shared_ptr<grid_data>, 8> m_data;
+		std::array<boost::shared_ptr<grid_data>, 8> m_data;
+
+	friend class boost::serialization::access;
+
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version) {
+		ar & m_level;
+		ar & m_mask;
+		ar & m_data;
+	}
+
 };

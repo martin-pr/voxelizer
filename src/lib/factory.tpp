@@ -37,9 +37,6 @@ std::unique_ptr<T> factory<T>::factoryMethod(boost::filesystem::path p) {
 
 template<typename T>
 std::unique_ptr<T> factory<T>::create(const boost::filesystem::path& file) {
-
-	std::cout << "***************  " << factories<T>().left.size() << std::endl;
-
 	auto it = factories<T>().left.find(file.extension().string());
 	if(it != factories<T>().left.end())
 		return it->second->factoryMethod(file);

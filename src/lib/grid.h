@@ -4,6 +4,8 @@
 #include <functional>
 #include <limits>
 
+#include <boost/serialization/access.hpp>
+
 #include "grid_data.h"
 #include "bbox.h"
 
@@ -41,6 +43,17 @@ class grid {
 		::bbox m_bbox;
 
 		grid_data m_data;
+
+		friend class boost::serialization::access;
+
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version) {
+			ar & m_depthPow;
+			ar & m_depth;
+			ar & m_coordLimit;
+			ar & m_bbox;
+			ar & m_data;
+		}
 
 	friend class grid_iterator;
 };
