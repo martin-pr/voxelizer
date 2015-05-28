@@ -1,13 +1,19 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
+#include <fstream>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 
 #include "mesh.h"
 #include "grid.h"
 #include "factory.tpp"
+#include "array_maths.h"
+
+#include "../common/config.h"
+#include "../common/common.h"
 
 namespace po = boost::program_options;
 
@@ -43,7 +49,7 @@ int main(int argc, char* argv[]) {
 		if(!boost::filesystem::exists(path))
 			throw std::runtime_error("cannot find input file " + path.string());
 
-		std::unique_ptr<mesh> object(factory<mesh>::create(argv[1]));
+		std::unique_ptr<mesh> object(factory<mesh>::create(path.string()));
 		if(object.get() == NULL)
 			throw std::runtime_error("Cannot load file " + path.string());
 
@@ -56,5 +62,12 @@ int main(int argc, char* argv[]) {
 
 		for(const auto& v : object->sample(minSample))
 			g.set(v);
+
+		// and write out the result
+		{
+			std::ofstream ofs(cache_path(path).string().c_str());
+			boost::archive::binary_oarchive oa(ofs);
+			oa << g;
+		}
 	}
 }

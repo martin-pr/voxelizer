@@ -1,7 +1,7 @@
 include_directories(./)
 include_directories(../lib)
 
-file(GLOB sources *.cpp)
+file(GLOB sources *.cpp ../common/config.cpp ../common/common.cpp)
 
 add_executable(cache_it ${sources})
 

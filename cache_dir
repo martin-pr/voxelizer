@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for var in "$@"
+do
+	echo "Processing $var ..."
+    ./cache_it --input "$var"
+done

@@ -116,6 +116,8 @@ endif (OPENEXR_INCLUDE_DIR AND OPENEXR_HALF_LIBRARY AND OPENEXR_IEX_LIBRARY)
 include_directories(${OPENEXR_INCLUDE_DIR})
 set(LIBS ${LIBS} ${OPENEXR_HALF_LIBRARY} ${OPENEXR_IEX_LIBRARY})
 
+# blindly adding libssl, should be available on all linux distros
+set(LIBS ${LIBS} crypto)
 
 ###########################################################
 # BUILD
