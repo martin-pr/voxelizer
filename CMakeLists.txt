@@ -119,6 +119,9 @@ set(LIBS ${LIBS} ${OPENEXR_HALF_LIBRARY} ${OPENEXR_IEX_LIBRARY})
 # blindly adding libssl, should be available on all linux distros
 set(LIBS ${LIBS} crypto)
 
+# blindly adding tbb
+set(LIBS ${LIBS} tbb)
+
 ###########################################################
 # BUILD
 

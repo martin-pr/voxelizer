@@ -7,6 +7,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
+#include <tbb/task_scheduler_init.h>
+
 #include "mesh.h"
 #include "grid.h"
 #include "factory.tpp"
@@ -58,6 +60,9 @@ int main(int argc, char* argv[]) {
 
 		// create the grid
 		grid g(level, object->bbox());
+
+		// initialise tbb
+		tbb::task_scheduler_init init;
 
 		// sample the object and write the result to the grid
 		cout << "Sampling... " << flush;

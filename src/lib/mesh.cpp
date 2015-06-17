@@ -1,11 +1,14 @@
 #include "mesh.h"
 
+#include <mutex>
 #include <fstream>
 #include <sstream>
 #include <cassert>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+
+#include <tbb/tbb.h>
 
 #include "array_maths.h"
 
@@ -68,11 +71,15 @@ void mesh::normalize() {
 
 namespace {
 	void sampleTriangle(const std::array<float, 3>& v1, const std::array<float, 3>& v2, const std::array<float, 3>& v3, const float maxEdgeLenSquared, std::function< void(std::array<float, 3>) > callback) {
+		static std::mutex mutex;
+
 		const float sql1 = squaredLength(v1-v2);
 		const float sql2 = squaredLength(v1-v3);
 		const float sql3 = squaredLength(v2-v3);
 
 		if((sql1 < maxEdgeLenSquared) && (sql2 < maxEdgeLenSquared) && (sql3 < maxEdgeLenSquared)) {
+			std::unique_lock<std::mutex> lock(mutex);
+
 			callback(v1);
 			callback(v2);
 			callback(v3);
@@ -97,6 +104,8 @@ namespace {
 }
 
 void mesh::sample(float maxEdgeLen, std::function< void(std::array<float, 3>) > callback) {
-	for(const auto& face : m_faces)
+	tbb::parallel_for((size_t)0, m_faces.size(), (size_t)1, [&](size_t i) {
+		auto& face = m_faces[i];
 		sampleTriangle(m_vertices[face[0]], m_vertices[face[1]], m_vertices[face[2]], maxEdgeLen*maxEdgeLen, callback);
+	});
 }

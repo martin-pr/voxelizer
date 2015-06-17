@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <tbb/task_scheduler_init.h>
+
 #include <QtGui/QApplication>
 
 #include <GL/freeglut.h>
@@ -34,6 +36,9 @@ int main(int argc, char*argv[]) {
 
 		// level 8 = 256x256x256
 		grid g(7, object->bbox());
+
+		// initialise tbb
+		tbb::task_scheduler_init init;
 
 		// sample the object and write the result to the grid
 		auto elem = g.element_size();
