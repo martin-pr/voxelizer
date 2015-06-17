@@ -13,6 +13,7 @@
 #include "grid.h"
 #include "factory.tpp"
 #include "array_maths.h"
+#include "sampler.h"
 
 #include "../common/config.h"
 #include "../common/common.h"
@@ -66,12 +67,12 @@ int main(int argc, char* argv[]) {
 
 		// sample the object and write the result to the grid
 		cout << "Sampling... " << flush;
-		auto elem = g.element_size();
-		const float minSample = std::min(std::min(elem[0], elem[1]), elem[2]) / 2.0f;
 
-		object->sample(minSample, [&g](std::array<float, 3> v) {
-			g.set(v);
-		});
+		{
+			sampler s(g);
+			s.add(*object);
+		}
+
 		cout << "done." << endl;
 
 		// and write out the result

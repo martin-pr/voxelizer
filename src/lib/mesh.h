@@ -20,8 +20,6 @@ class mesh {
 
 		void normalize();
 
-		void sample(float maxEdgeLen, std::function< void(std::array<float, 3>) > callback);
-
 	private:
 		std::vector<std::array<float, 3>> m_vertices;
 		std::vector<std::array<unsigned, 3>> m_faces;

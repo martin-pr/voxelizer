@@ -9,6 +9,7 @@
 #include "window.h"
 #include "factory.tpp"
 #include "grid.h"
+#include "sampler.h"
 
 using std::cout;
 using std::cerr;
@@ -41,12 +42,10 @@ int main(int argc, char*argv[]) {
 		tbb::task_scheduler_init init;
 
 		// sample the object and write the result to the grid
-		auto elem = g.element_size();
-		const float minSample = std::min(std::min(elem[0], elem[1]), elem[2]) / 2.0f;
-
-		object->sample(minSample, [&g](std::array<float, 3> v) {
-			g.set(v);
-		});
+		{
+			sampler s(g);
+			s.add(*object);
+		}
 
 		// and make a window to display this data
 		window win;
