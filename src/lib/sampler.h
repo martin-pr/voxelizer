@@ -14,7 +14,7 @@ class sampler {
 
 	protected:
 	private:
-		void sampleTriangle(const std::array<float, 3>& v1, const std::array<float, 3>& v2, const std::array<float, 3>& v3, const float maxEdgeLenSquared);
+		void sampleTriangle(std::array<float, 3> v1, std::array<float, 3> v2, std::array<float, 3> v3, const float maxEdgeLenSquared);
 
 		grid& m_grid;
 };

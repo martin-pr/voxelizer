@@ -33,10 +33,10 @@ class grid {
 		///   like an iterator (and more efficient)
 		void visit_active(const std::function<void (const ::bbox&)>& visitor, unsigned max_level = std::numeric_limits<unsigned>::max());
 
-	protected:
-	private:
 		const std::array<unsigned, 3> coord(const std::array<float, 3>& pos) const;
 
+	protected:
+	private:
 		float m_depthPow;
 		unsigned m_depth;
 		unsigned m_coordLimit;

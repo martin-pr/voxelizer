@@ -1,6 +1,7 @@
 #include "sampler.h"
 
 #include <mutex>
+#include <stack>
 
 #include <tbb/tbb.h>
 
@@ -9,35 +10,51 @@
 sampler::sampler(grid& g) : m_grid(g) {
 }
 
-void sampler::sampleTriangle(const std::array<float, 3>& v1, const std::array<float, 3>& v2, const std::array<float, 3>& v3, const float maxEdgeLenSquared) {
+void sampler::sampleTriangle(std::array<float, 3> v1, std::array<float, 3> v2, std::array<float, 3> v3, const float maxEdgeLenSquared) {
 	static std::mutex mutex;
 
-	const float sql1 = squaredLength(v1-v2);
-	const float sql2 = squaredLength(v1-v3);
-	const float sql3 = squaredLength(v2-v3);
+	std::stack<std::array<std::array<float,3>,3>> stack;
+	stack.push(std::array<std::array<float,3>,3>{v1,v2,v3});
 
-	if((sql1 < maxEdgeLenSquared) && (sql2 < maxEdgeLenSquared) && (sql3 < maxEdgeLenSquared)) {
-		std::unique_lock<std::mutex> lock(mutex);
+	while(!stack.empty()) {
+		v1 = stack.top()[0];
+		v2 = stack.top()[1];
+		v3 = stack.top()[2];
+		stack.pop();
 
-		m_grid.set(v1);
-		m_grid.set(v2);
-		m_grid.set(v3);
-	}
+		const auto c1 = m_grid.coord(v1);
+		const auto c2 = m_grid.coord(v2);
+		const auto c3 = m_grid.coord(v3);
 
-	else if((sql1 > sql2) && (sql1 > sql3)) {
-		const std::array<float, 3> mid = (v1+v2) / 2.0f;
-		sampleTriangle(v1, mid, v3, maxEdgeLenSquared);
-		sampleTriangle(mid, v2, v3, maxEdgeLenSquared);
-	}
-	else if((sql2 > sql1) && (sql2 > sql3)) {
-		const std::array<float, 3> mid = (v1+v3) / 2.0f;
-		sampleTriangle(v3, mid, v2, maxEdgeLenSquared);
-		sampleTriangle(mid, v1, v2, maxEdgeLenSquared);
-	}
-	else {
-		const std::array<float, 3> mid = (v2+v3) / 2.0f;
-		sampleTriangle(v1, mid, v3, maxEdgeLenSquared);
-		sampleTriangle(mid, v1, v2, maxEdgeLenSquared);
+		const float sql1 = squaredLength(v1-v2);
+		const float sql2 = squaredLength(v1-v3);
+		const float sql3 = squaredLength(v2-v3);
+
+		if(((c1 == c2) && (c1 == c3)) || ((sql1 < maxEdgeLenSquared) && (sql2 < maxEdgeLenSquared) && (sql3 < maxEdgeLenSquared))) {
+			std::unique_lock<std::mutex> lock(mutex);
+
+			m_grid.set(v1);
+			m_grid.set(v2);
+			m_grid.set(v3);
+		}
+
+		else {
+			if((sql1 > sql2) && (sql1 > sql3)) {
+				const std::array<float, 3> mid = (v1+v2) / 2.0f;
+				stack.push({v1, mid, v3});
+				stack.push({mid, v2, v3});
+			}
+			else if((sql2 > sql1) && (sql2 > sql3)) {
+				const std::array<float, 3> mid = (v1+v3) / 2.0f;
+				stack.push({v3, mid, v2});
+				stack.push({mid, v1, v2});
+			}
+			else {
+				const std::array<float, 3> mid = (v2+v3) / 2.0f;
+				stack.push({v1, mid, v3});
+				stack.push({mid, v1, v2});
+			}
+		}
 	}
 }
 
