@@ -67,40 +67,36 @@ void mesh::normalize() {
 }
 
 namespace {
-	void sampleTriangle(std::vector<std::array<float, 3>>& result, const std::array<float, 3>& v1, const std::array<float, 3>& v2, const std::array<float, 3>& v3, const float maxEdgeLenSquared) {
+	void sampleTriangle(const std::array<float, 3>& v1, const std::array<float, 3>& v2, const std::array<float, 3>& v3, const float maxEdgeLenSquared, std::function< void(std::array<float, 3>) > callback) {
 		const float sql1 = squaredLength(v1-v2);
 		const float sql2 = squaredLength(v1-v3);
 		const float sql3 = squaredLength(v2-v3);
 
 		if((sql1 < maxEdgeLenSquared) && (sql2 < maxEdgeLenSquared) && (sql3 < maxEdgeLenSquared)) {
-			result.push_back(v1);
-			result.push_back(v2);
-			result.push_back(v3);
+			callback(v1);
+			callback(v2);
+			callback(v3);
 		}
 
 		else if((sql1 > sql2) && (sql1 > sql3)) {
 			const std::array<float, 3> mid = (v1+v2) / 2.0f;
-			sampleTriangle(result, v1, mid, v3, maxEdgeLenSquared);
-			sampleTriangle(result, mid, v2, v3, maxEdgeLenSquared);
+			sampleTriangle(v1, mid, v3, maxEdgeLenSquared, callback);
+			sampleTriangle(mid, v2, v3, maxEdgeLenSquared, callback);
 		}
 		else if((sql2 > sql1) && (sql2 > sql3)) {
 			const std::array<float, 3> mid = (v1+v3) / 2.0f;
-			sampleTriangle(result, v3, mid, v2, maxEdgeLenSquared);
-			sampleTriangle(result, mid, v1, v2, maxEdgeLenSquared);
+			sampleTriangle(v3, mid, v2, maxEdgeLenSquared, callback);
+			sampleTriangle(mid, v1, v2, maxEdgeLenSquared, callback);
 		}
 		else {
 			const std::array<float, 3> mid = (v2+v3) / 2.0f;
-			sampleTriangle(result, v1, mid, v3, maxEdgeLenSquared);
-			sampleTriangle(result, mid, v1, v2, maxEdgeLenSquared);
+			sampleTriangle(v1, mid, v3, maxEdgeLenSquared, callback);
+			sampleTriangle(mid, v1, v2, maxEdgeLenSquared, callback);
 		}
 	}
 }
 
-std::vector<std::array<float, 3>> mesh::sample(float maxEdgeLen) {
-	std::vector<std::array<float, 3>> result;
-
+void mesh::sample(float maxEdgeLen, std::function< void(std::array<float, 3>) > callback) {
 	for(const auto& face : m_faces)
-		sampleTriangle(result, m_vertices[face[0]], m_vertices[face[1]], m_vertices[face[2]], maxEdgeLen*maxEdgeLen);
-
-	return result;
+		sampleTriangle(m_vertices[face[0]], m_vertices[face[1]], m_vertices[face[2]], maxEdgeLen*maxEdgeLen, callback);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 
 #include "bbox.h"
 
@@ -19,7 +20,7 @@ class mesh {
 
 		void normalize();
 
-		std::vector<std::array<float, 3>> sample(float maxEdgeLen);
+		void sample(float maxEdgeLen, std::function< void(std::array<float, 3>) > callback);
 
 	private:
 		std::vector<std::array<float, 3>> m_vertices;

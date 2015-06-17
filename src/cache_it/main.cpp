@@ -19,6 +19,7 @@ namespace po = boost::program_options;
 
 using std::cout;
 using std::endl;
+using std::flush;
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
@@ -49,25 +50,34 @@ int main(int argc, char* argv[]) {
 		if(!boost::filesystem::exists(path))
 			throw std::runtime_error("cannot find input file " + path.string());
 
+		cout << "Loading file " << path.string() << " ... " << flush;
 		std::unique_ptr<mesh> object(factory<mesh>::create(path.string()));
 		if(object.get() == NULL)
 			throw std::runtime_error("Cannot load file " + path.string());
+		cout << "done." << endl;
 
 		// create the grid
 		grid g(level, object->bbox());
 
 		// sample the object and write the result to the grid
+		cout << "Sampling... " << flush;
 		auto elem = g.element_size();
 		const float minSample = std::min(std::min(elem[0], elem[1]), elem[2]) / 2.0f;
 
-		for(const auto& v : object->sample(minSample))
+		object->sample(minSample, [&g](std::array<float, 3> v) {
 			g.set(v);
+		});
+		cout << "done." << endl;
 
 		// and write out the result
 		{
+			cout << "Writing... " << flush;
+
 			std::ofstream ofs(cache_path(path).string().c_str());
 			boost::archive::binary_oarchive oa(ofs);
 			oa << g;
+
+			cout << "done." << endl;
 		}
 	}
 }
